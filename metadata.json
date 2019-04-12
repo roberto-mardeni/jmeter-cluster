@@ -1,0 +1,11 @@
+{
+  "$schema": "https://aka.ms/azure-quickstart-templates-metadata-schema#",
+  "type": "QuickStart",
+  "itemDisplayName": "JMeter environment",
+  "description": "This template will deploy a JMeter environment into an existing virtual network. One master node and multiple subordinate nodes are deployed into a new jmeter subnet. This template was created based on https://github.com/Azure/azure-quickstart-templates/tree/master/elasticsearch-jmeter",
+  "summary": "Provision a JMeter test environment",
+  "githubUsername": "roberto-mardeni",
+  "dateUpdated": "2018-06-26" 
+}
+
+
