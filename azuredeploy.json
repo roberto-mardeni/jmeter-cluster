@@ -313,7 +313,7 @@
       },
       "resources": [{
         "type": "Microsoft.Compute/virtualMachines/extensions",
-        "name": "[concat(variables('vmName'), '-boss', '-installjmeter')]",
+        "name": "[concat(variables('vmName'), '-boss', '/installjmeter')]",
         "apiVersion": "[variables('apiVersion')]",
         "location": "[parameters('location')]",
         "dependsOn": [
@@ -407,7 +407,7 @@
       },
       "resources": [{
         "type": "Microsoft.Compute/virtualMachines/extensions",
-        "name": "[concat(variables('vmName'), '-sub', copyindex(), '-installjmeter')]",
+        "name": "[concat(variables('vmName'), '-sub', copyindex(), '/installjmeter')]",
         "apiVersion": "[variables('apiVersion')]",
         "location": "[parameters('location')]",
         "dependsOn": [
