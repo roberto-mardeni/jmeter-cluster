@@ -34,7 +34,6 @@ help()
     echo "  -r <hosts>      set remote hosts (master only)"
     echo "  -j <jarball>    location of the jarball to download and unzip"
     echo "  -t <testpack>   location of the test pack to download and unzip (master only)"
-    echo "  -v <version>    version of jmeter to install"
 }
 
 log()
@@ -56,7 +55,7 @@ fi
 # script parameters
 IS_MASTER=0
 REMOTE_HOSTS=""
-JMETER_VERSION="5.1.1"
+CLUSTER_NAME="elasticsearch"
 
 while getopts :hmr:j:t: optname; do
   log "Option $optname set with value ${OPTARG}"
@@ -76,9 +75,6 @@ while getopts :hmr:j:t: optname; do
       ;;
     t) # provide testpack
       TESTPACK=${OPTARG}
-      ;;
-    v) # provide JMeter Version
-      JMETER_VERSION=${OPTARG}
       ;;
     \?) # unrecognized option - show help
       help
@@ -118,7 +114,7 @@ install_jmeter_service()
 
     start on starting
     script
-        /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter-server
+        /opt/jmeter/apache-jmeter-2.13/bin/jmeter-server
     end script
 EOF
 
@@ -128,14 +124,14 @@ EOF
 
 update_config_sub()
 {
-    mv /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties.bak
-    cat /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties.bak | sed "s|#client.rmi.localport=0|client.rmi.localport=4441|" | sed "s|#server.rmi.localport=4000|server.rmi.localport=4440|" > /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties 
+    mv /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties.bak
+    cat /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties.bak | sed "s|#client.rmi.localport=0|client.rmi.localport=4441|" | sed "s|#server.rmi.localport=4000|server.rmi.localport=4440|" > /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties 
 }
 
 update_config_boss()
 {
-    mv /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties.bak
-    cat /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties.bak | sed "s|#client.rmi.localport=0|client.rmi.localport=4440|" | sed "s|remote_hosts=127.0.0.1|remote_hosts=${REMOTE_HOSTS}|" > /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties 
+    mv /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties.bak
+    cat /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties.bak | sed "s|#client.rmi.localport=0|client.rmi.localport=4440|" | sed "s|remote_hosts=127.0.0.1|remote_hosts=${REMOTE_HOSTS}|" > /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties 
 }
 
 install_jmeter()
@@ -144,23 +140,23 @@ install_jmeter()
     apt-get -y install unzip 
     
     mkdir -p /opt/jmeter
-    wget -O jmeter.zip http://apache.mirror.anlx.net/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.zip
+    wget -O jmeter.zip http://archive.apache.org/dist/jmeter/binaries/apache-jmeter-2.13.zip
     wget -O plugins.zip http://jmeter-plugins.org/downloads/file/JMeterPlugins-Standard-1.3.0.zip
     
     log "unzipping jmeter"
     unzip -q jmeter.zip -d /opt/jmeter/
     
     log "unzipping plugins"
-    unzip -q plugins.zip -d /opt/jmeter/apache-jmeter-${JMETER_VERSION}/
+    unzip -q plugins.zip -d /opt/jmeter/apache-jmeter-2.13/
      
-    chmod u+x /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter-server
-    chmod u+x /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter
+    chmod u+x /opt/jmeter/apache-jmeter-2.13/bin/jmeter-server
+    chmod u+x /opt/jmeter/apache-jmeter-2.13/bin/jmeter
 
     if [ ${JARBALL} ];
     then
         log "installing jarball"
         wget -O jarball.zip ${JARBALL}
-        unzip -q jarball.zip -d /opt/jmeter/apache-jmeter-${JMETER_VERSION}/lib/junit/
+        unzip -q jarball.zip -d /opt/jmeter/apache-jmeter-2.13/lib/junit/
     fi
     
     if [ ${IS_MASTER} -ne 1 ]; 
