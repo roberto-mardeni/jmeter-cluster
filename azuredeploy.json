@@ -92,6 +92,31 @@
       "metadata": {
         "description": "Location for all resources."
       }
+    },
+    "devopsUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "(Optional) The URL of the Azure DevOps Organization to add the master as an agent."
+      }
+    },
+    "devopsPat": {
+      "type": "string",
+      "metadata": {
+        "description": "(Optional) The PAT of the Azure DevOps Organization to add the master as an agent."
+      }
+    },
+    "devopsProject": {
+      "type": "string",
+      "metadata": {
+        "description": "(Optional) The Project of the Azure DevOps Organization to add the master as an agent."
+      }
+    },
+    "devopsDeploymentGroup": {
+      "type": "string",
+      "defaultValue": "JMeter",
+      "metadata": {
+        "description": "(Optional) The Deployment Group of the Azure DevOps Organization to add the master as an agent."
+      }
     }
   },
   "variables": {
@@ -115,7 +140,7 @@
     "nicName": "jmeter-nic",
     "vmName": "jmeter-vm",
     "setupScripts": [
-      "[concat(variables('templateBaseUrl'), 'resources/jmeter-install.sh')]"
+      "[concat(variables('templateBaseUrl'), 'resources/install.sh')]"
     ],
     "settings": {
       "imageReference": {
@@ -133,7 +158,7 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": "[variables('setupScripts')]",
-            "commandToExecute": "[concat('bash jmeter-install.sh -mr ', variables('subNodesIpPrefix'), '-', parameters('subNodeCount'), ' -j ', parameters('jarball'), ' -t ', parameters('testpack'))]"
+            "commandToExecute": "[concat('bash install.sh -mr ', variables('subNodesIpPrefix'), '-', parameters('subNodeCount'), ' -j ', parameters('jarball'))]"
           }
         },
         "sub": {
@@ -143,14 +168,13 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": "[variables('setupScripts')]",
-            "commandToExecute": "[concat('bash jmeter-install.sh -j ', parameters('jarball'))]"
+            "commandToExecute": "[concat('bash install.sh -j ', parameters('jarball'))]"
           }
         }
       }
     }
   },
-  "resources": [
-    {
+  "resources": [{
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('storageAccountName')]",
       "apiVersion": "2015-06-15",
@@ -174,22 +198,20 @@
       "name": "jmeter-nsg",
       "location": "[parameters('location')]",
       "properties": {
-        "securityRules": [
-          {
-            "name": "SSH",
-            "properties": {
-              "description": "Allows SSH traffic",
-              "protocol": "Tcp",
-              "sourcePortRange": "[variables('settings').managementPort]",
-              "destinationPortRange": "[variables('settings').managementPort]",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 100,
-              "direction": "Inbound"
-            }
+        "securityRules": [{
+          "name": "SSH",
+          "properties": {
+            "description": "Allows SSH traffic",
+            "protocol": "Tcp",
+            "sourcePortRange": "[variables('settings').managementPort]",
+            "destinationPortRange": "[variables('settings').managementPort]",
+            "sourceAddressPrefix": "*",
+            "destinationAddressPrefix": "*",
+            "access": "Allow",
+            "priority": 100,
+            "direction": "Inbound"
           }
-        ]
+        }]
       }
     },
     {
@@ -214,18 +236,16 @@
         "[concat('Microsoft.Network/virtualNetworks/', variables('networkSettings').virtualNetworkName, '/subnets/jmeter')]"
       ],
       "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfigsub",
-            "properties": {
-              "privateIPAllocationMethod": "Static",
-              "privateIPAddress": "[concat(variables('subNodesIpPrefix'), copyindex())]",
-              "subnet": {
-                "id": "[variables('subnetRef')]"
-              }
+        "ipConfigurations": [{
+          "name": "ipconfigsub",
+          "properties": {
+            "privateIPAllocationMethod": "Static",
+            "privateIPAddress": "[concat(variables('subNodesIpPrefix'), copyindex())]",
+            "subnet": {
+              "id": "[variables('subnetRef')]"
             }
           }
-        ]
+        }]
       }
     },
     {
@@ -238,28 +258,26 @@
         "[concat('Microsoft.Network/networkSecurityGroups/', 'jmeter-nsg')]"
       ],
       "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfigboss",
-            "properties": {
-              "privateIPAllocationMethod": "Static",
-              "privateIPAddress": "[variables('bossNodeIp')]",
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'jmeter-pip')]"
-              },
-              "subnet": {
-                "id": "[variables('subnetRef')]"
-              },
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'jmeter-nsg')]"
-              }
+        "ipConfigurations": [{
+          "name": "ipconfigboss",
+          "properties": {
+            "privateIPAllocationMethod": "Static",
+            "privateIPAddress": "[variables('bossNodeIp')]",
+            "publicIPAddress": {
+              "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'jmeter-pip')]"
+            },
+            "subnet": {
+              "id": "[variables('subnetRef')]"
+            },
+            "networkSecurityGroup": {
+              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'jmeter-nsg')]"
             }
           }
-        ]
+        }]
       }
     },
     {
-      "apiVersion": "2017-03-30", 
+      "apiVersion": "2017-03-30",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('vmName'), '-boss')]",
       "location": "[parameters('location')]",
@@ -285,36 +303,70 @@
           }
         },
         "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'), '-boss'))]"
-            }
-          ]
+          "networkInterfaces": [{
+            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'), '-boss'))]"
+          }]
         }
       },
-      "resources": [
-        {
-          "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "[concat(variables('vmName'), '-boss', '/installjmeter')]",
-          "apiVersion": "[variables('apiVersion')]",
-          "location": "[parameters('location')]",
-          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]"
-          ],
-          "properties": {
-            "publisher": "[variables('settings').extensionSettings.boss.publisher]",
-            "type": "[variables('settings').extensionSettings.boss.type]",
-            "typeHandlerVersion": "[variables('settings').extensionSettings.boss.typeHandlerVersion]",
-            "settings": {
-              "fileUris": "[variables('settings').extensionSettings.boss.settings.fileUris]",
-              "commandToExecute": "[concat(variables('settings').extensionSettings.boss.settings.commandToExecute)]"
-            }
+      "resources": [{
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "name": "[concat(variables('vmName'), '-boss', '/installjmeter')]",
+        "apiVersion": "[variables('apiVersion')]",
+        "location": "[parameters('location')]",
+        "dependsOn": [
+          "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]"
+        ],
+        "properties": {
+          "publisher": "[variables('settings').extensionSettings.boss.publisher]",
+          "type": "[variables('settings').extensionSettings.boss.type]",
+          "typeHandlerVersion": "[variables('settings').extensionSettings.boss.typeHandlerVersion]",
+          "settings": {
+            "fileUris": "[variables('settings').extensionSettings.boss.settings.fileUris]",
+            "commandToExecute": "[concat(variables('settings').extensionSettings.boss.settings.commandToExecute)]"
           }
         }
+      }]
+    },
+    {
+      "condition": "[and(not(empty(parameters('devopsUrl'))), not(empty(parameters('devopsProject'))), not(empty(parameters('devopsDeploymentGroup'))), not(empty(parameters('devopsPat'))))]",
+      "name": "[concat(variables('vmName'), '-boss-vsts-agent')]",
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://gallery.azure.com/artifact/20161101/microsoft.vsts-agent-linux-arm.1.0.3/Artifacts/MainTemplate.json"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "[concat(variables('vmName'), '-boss')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "VSTSAccountUrl": {
+            "value": "[parameters('devopsUrl')]"
+          },
+          "TeamProject": {
+            "value": "[parameters('devopsProject')]"
+          },
+          "DeploymentGroup": {
+            "value": "[parameters('devopsDeploymentGroup')]"
+          },
+          "AgentName": {
+            "value": "[variables('vmName')]"
+          },
+          "PATToken": {
+            "value": "[parameters('devopsPat')]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]"
       ]
     },
     {
-      "apiVersion": "2017-03-30", 
+      "apiVersion": "2017-03-30",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('vmName'), '-sub', copyindex())]",
       "location": "[parameters('location')]",
@@ -338,39 +390,35 @@
         "storageProfile": {
           "imageReference": "[variables('settings').imageReference]",
           "osDisk": {
-            "name": "[concat(variables('vmName'), '-sub', copyindex(),'_OSDisk')]",   
+            "name": "[concat(variables('vmName'), '-sub', copyindex(),'_OSDisk')]",
             "caching": "ReadWrite",
             "createOption": "FromImage"
           }
         },
         "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'), '-sub', copyindex()))]"
-            }
-          ]
+          "networkInterfaces": [{
+            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'), '-sub', copyindex()))]"
+          }]
         }
       },
-      "resources": [
-        {
-          "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "[concat(variables('vmName'), '-sub', copyindex(), '/installjmeter')]",
-          "apiVersion": "[variables('apiVersion')]",
-          "location": "[parameters('location')]",
-          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-sub', copyindex())]"
-          ],
-          "properties": {
-            "publisher": "[variables('settings').extensionSettings.sub.publisher]",
-            "type": "[variables('settings').extensionSettings.sub.type]",
-            "typeHandlerVersion": "[variables('settings').extensionSettings.sub.typeHandlerVersion]",
-            "settings": {
-              "fileUris": "[variables('settings').extensionSettings.sub.settings.fileUris]",
-              "commandToExecute": "[concat(variables('settings').extensionSettings.sub.settings.commandToExecute)]"
-            }
+      "resources": [{
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "name": "[concat(variables('vmName'), '-sub', copyindex(), '/installjmeter')]",
+        "apiVersion": "[variables('apiVersion')]",
+        "location": "[parameters('location')]",
+        "dependsOn": [
+          "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-sub', copyindex())]"
+        ],
+        "properties": {
+          "publisher": "[variables('settings').extensionSettings.sub.publisher]",
+          "type": "[variables('settings').extensionSettings.sub.type]",
+          "typeHandlerVersion": "[variables('settings').extensionSettings.sub.typeHandlerVersion]",
+          "settings": {
+            "fileUris": "[variables('settings').extensionSettings.sub.settings.fileUris]",
+            "commandToExecute": "[concat(variables('settings').extensionSettings.sub.settings.commandToExecute)]"
           }
         }
-      ]
+      }]
     }
   ],
   "outputs": {
