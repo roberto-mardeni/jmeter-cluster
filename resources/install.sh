@@ -29,10 +29,11 @@ help()
 {
     echo "This script installs JMeter on Ubuntu"
     echo "Parameters:"
-    echo "  -h              view this help content"
-    echo "  -m              install as a master node"
-    echo "  -r <hosts>      set remote hosts (master only)"
-    echo "  -j <jarball>    location of the jarball to download and unzip"
+    echo "  -h                view this help content"
+    echo "  -v                JMeter version to install"
+    echo "  -m                install as a master node"
+    echo "  -r <hosts>        set remote hosts (master only)"
+    echo "  -j <jarball>      location of the jarball to download and unzip"
 }
 
 log()
@@ -54,9 +55,10 @@ fi
 # script parameters
 IS_MASTER=0
 REMOTE_HOSTS=""
-CLUSTER_NAME="elasticsearch"
+JMETER_VERSION="5.1.1"
+JMETER_PLUGINS_VERSION="1.3.1"
 
-while getopts :hmr:j:t: optname; do
+while getopts :hmr:j: optname; do
   log "Option $optname set with value ${OPTARG}"
   case $optname in
     h) # show help
@@ -105,29 +107,43 @@ install_java()
 
 install_jmeter_service()
 {
-    cat << EOF > /etc/init/jmeter.conf
-    description "JMeter Service"
+    keytool -genkey -keyalg RSA -alias rmi -keystore rmi_keystore.jks -storepass changeit -validity 7 -keysize 2048 -dname "CN=JMeter Cluster, OU=Test, O=Test, L=Miami, ST=FL, C=US" -keypass changeit "$@"
 
-    start on starting
-    script
-        /opt/jmeter/apache-jmeter-2.13/bin/jmeter-server
-    end script
+    cp rmi_keystore.jks /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/rmi_keystore.jks
+
+    cat << EOF > /etc/systemd/system/jmeter.service
+[Unit]
+Description=JMeter Server
+After=network.target
+
+[Service]
+ExecStart=/opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter-server
+User=sysadmin
+WorkingDirectory=/opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin
+KillMode=process
+KillSignal=SIGTERM
+TimeoutStopSec=5min
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
-    chmod +x /etc/init/jmeter.conf
-    service jmeter start
+    systemctl daemon-reload
+    systemctl enable jmeter.service
+    systemctl start jmeter.service
+    systemctl --no-pager status jmeter.service
 }
 
 update_config_sub()
 {
-    mv /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties.bak
-    cat /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties.bak | sed "s|#client.rmi.localport=0|client.rmi.localport=4441|" | sed "s|#server.rmi.localport=4000|server.rmi.localport=4440|" > /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties 
+    mv /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties.bak
+    cat /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties.bak | sed "s|#client.rmi.localport=0|client.rmi.localport=4441|" | sed "s|#server.rmi.localport=4000|server.rmi.localport=4440|" > /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties 
 }
 
 update_config_boss()
 {
-    mv /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties.bak
-    cat /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties.bak | sed "s|#client.rmi.localport=0|client.rmi.localport=4440|" | sed "s|remote_hosts=127.0.0.1|remote_hosts=${REMOTE_HOSTS}|" > /opt/jmeter/apache-jmeter-2.13/bin/jmeter.properties 
+    mv /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties.bak
+    cat /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties.bak | sed "s|#client.rmi.localport=0|client.rmi.localport=4440|" | sed "s|remote_hosts=127.0.0.1|remote_hosts=${REMOTE_HOSTS}|" > /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter.properties 
 }
 
 install_jmeter()
@@ -136,23 +152,29 @@ install_jmeter()
     apt-get -y install unzip 
     
     mkdir -p /opt/jmeter
-    wget -O jmeter.zip http://archive.apache.org/dist/jmeter/binaries/apache-jmeter-2.13.zip
-    wget -O plugins.zip http://jmeter-plugins.org/downloads/file/JMeterPlugins-Standard-1.3.0.zip
+    wget -O jmeter.zip http://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.zip
+    wget -O JMeterPlugins-Standard.zip http://jmeter-plugins.org/downloads/file/JMeterPlugins-Standard-${JMETER_PLUGINS_VERSION}.zip
+    wget -O JMeterPlugins-Extras.zip http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-${JMETER_PLUGINS_VERSION}.zip
+    wget -O JMeterPlugins-ExtrasLibs.zip http://jmeter-plugins.org/downloads/file/JMeterPlugins-ExtrasLibs-${JMETER_PLUGINS_VERSION}.zip
+    wget -O JMeterPlugins-WebDriver.zip http://jmeter-plugins.org/downloads/file/JMeterPlugins-WebDriver-${JMETER_PLUGINS_VERSION}.zip
     
     log "unzipping jmeter"
     unzip -q jmeter.zip -d /opt/jmeter/
     
     log "unzipping plugins"
-    unzip -q plugins.zip -d /opt/jmeter/apache-jmeter-2.13/
+    unzip -qo JMeterPlugins-Standard.zip -d /opt/jmeter/apache-jmeter-${JMETER_VERSION}/
+    unzip -qo JMeterPlugins-Extras.zip -d /opt/jmeter/apache-jmeter-${JMETER_VERSION}/
+    unzip -qo JMeterPlugins-ExtrasLibs.zip -d /opt/jmeter/apache-jmeter-${JMETER_VERSION}/
+    unzip -qo JMeterPlugins-WebDriver.zip -d /opt/jmeter/apache-jmeter-${JMETER_VERSION}/
      
-    chmod u+x /opt/jmeter/apache-jmeter-2.13/bin/jmeter-server
-    chmod u+x /opt/jmeter/apache-jmeter-2.13/bin/jmeter
+    chmod u+x /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter-server
+    chmod u+x /opt/jmeter/apache-jmeter-${JMETER_VERSION}/bin/jmeter
 
     if [ ${JARBALL} ];
     then
         log "installing jarball"
         wget -O jarball.zip ${JARBALL}
-        unzip -q jarball.zip -d /opt/jmeter/apache-jmeter-2.13/lib/junit/
+        unzip -q jarball.zip -d /opt/jmeter/apache-jmeter-${JMETER_VERSION}/lib/junit/
     fi
     
     if [ ${IS_MASTER} -ne 1 ]; 
@@ -175,7 +197,6 @@ install_jmeter()
     chown -R jmeter: /opt/jmeter
 }
 
-
 if [ ${REMOTE_RANGE} ];
 then
     S=$(expand_ip_range "$REMOTE_RANGE")
@@ -185,5 +206,8 @@ fi
 
 install_java
 install_jmeter
+
+# remove any zip files downloaded
+rm -f *.zip
 
 log "script complete"
