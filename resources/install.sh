@@ -33,7 +33,6 @@ help()
     echo "  -m              install as a master node"
     echo "  -r <hosts>      set remote hosts (master only)"
     echo "  -j <jarball>    location of the jarball to download and unzip"
-    echo "  -t <testpack>   location of the test pack to download and unzip (master only)"
 }
 
 log()
@@ -72,9 +71,6 @@ while getopts :hmr:j:t: optname; do
       ;;
     j) # provide jarball
       JARBALL=${OPTARG}
-      ;;
-    t) # provide testpack
-      TESTPACK=${OPTARG}
       ;;
     \?) # unrecognized option - show help
       help
@@ -172,14 +168,6 @@ install_jmeter()
         iptables -A OUTPUT -p tcp --match multiport --dports 4440:4445 -j ACCEPT
     
         update_config_boss
-        
-        if [ ${TESTPACK} ];
-        then
-            log "installing test pack"
-            wget -O testpack.zip ${TESTPACK}
-            unzip -q testpack.zip -d /opt/jmeter/
-            chmod +x /opt/jmeter/run.sh
-        fi
     fi
     
     groupadd -g 999 jmeter

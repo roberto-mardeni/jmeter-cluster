@@ -79,13 +79,6 @@
         "description": "The location of the test library and jar dependencies. This is extracted to every node under /opt/jmeter/apache-jmeter-2.13/lib/junit"
       }
     },
-    "testpack": {
-      "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/roberto-mardeni/jmeter-cluster/master/resources/testpack.zip",
-      "metadata": {
-        "description": "The location of the test jmx and run properties. This is extracted to the JMeter master node only, in /opt/jmeter"
-      }
-    },
     "templateBase": {
       "type": "string",
       "defaultValue": "https://raw.githubusercontent.com/roberto-mardeni/jmeter-cluster/master",
