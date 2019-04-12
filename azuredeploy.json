@@ -99,13 +99,6 @@
       "metadata": {
         "description": "Location for all resources."
       }
-    },
-    "jMeterVersion": {
-      "type": "string",
-      "defaultValue": "5.1.1",
-      "metadata": {
-        "description": "Version of JMeter to install."
-      }
     }
   },
   "variables": {
