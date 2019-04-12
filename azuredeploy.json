@@ -312,51 +312,48 @@
         }
       },
       "resources": [{
-          "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "[concat(variables('vmName'), '-boss', '/installjmeter')]",
-          "apiVersion": "[variables('apiVersion')]",
-          "location": "[parameters('location')]",
-          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]"
-          ],
-          "properties": {
-            "publisher": "[variables('settings').extensionSettings.boss.publisher]",
-            "type": "[variables('settings').extensionSettings.boss.type]",
-            "typeHandlerVersion": "[variables('settings').extensionSettings.boss.typeHandlerVersion]",
-            "settings": {
-              "fileUris": "[variables('settings').extensionSettings.boss.settings.fileUris]",
-              "commandToExecute": "[concat(variables('settings').extensionSettings.boss.settings.commandToExecute)]"
-            }
-          }
-        }, {
-          "condition": "[and(not(empty(parameters('devopsUrl'))), not(empty(parameters('devopsProject'))), not(empty(parameters('devopsDeploymentGroup'))), not(empty(parameters('devopsPat'))))]",
-          "name": "[concat(variables('vmName'), '-boss', '/vstsagent')]",
-          "type": "Microsoft.Compute/virtualMachines/extensions",
-          "location": "[parameters('location')]",
-          "apiVersion": "2015-06-15",
-          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]",
-            "[concat('Microsoft.Compute/virtualMachines/extensions/', variables('vmName'), '-boss', '/installjmeter')]"
-          ],
-          "properties": {
-            "publisher": "Microsoft.VisualStudio.Services",
-            "type": "TeamServicesAgentLinux",
-            "typeHandlerVersion": "1.0",
-            "autoUpgradeMinorVersion": true,
-            "settings": {
-              "VSTSAccountUrl": "[parameters('devopsUrl')]",
-              "TeamProject": "[parameters('devopsProject')]",
-              "DeploymentGroup": "[parameters('devopsDeploymentGroup')]",
-              "AgentName": "[variables('vmName')]",
-              "Tags": ""
-            },
-            "protectedSettings": {
-              "PATToken": "[parameters('devopsPat')]"
-            }
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "name": "[concat(variables('vmName'), '-boss', '/installjmeter')]",
+        "apiVersion": "[variables('apiVersion')]",
+        "location": "[parameters('location')]",
+        "dependsOn": [
+          "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]"
+        ],
+        "properties": {
+          "publisher": "[variables('settings').extensionSettings.boss.publisher]",
+          "type": "[variables('settings').extensionSettings.boss.type]",
+          "typeHandlerVersion": "[variables('settings').extensionSettings.boss.typeHandlerVersion]",
+          "settings": {
+            "fileUris": "[variables('settings').extensionSettings.boss.settings.fileUris]",
+            "commandToExecute": "[concat(variables('settings').extensionSettings.boss.settings.commandToExecute)]"
           }
         }
-
-      ]
+      }, {
+        "condition": "[and(not(empty(parameters('devopsUrl'))), not(empty(parameters('devopsProject'))), not(empty(parameters('devopsDeploymentGroup'))), not(empty(parameters('devopsPat'))))]",
+        "name": "[concat(variables('vmName'), '-boss', '/vstsagent')]",
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "location": "[parameters('location')]",
+        "apiVersion": "[variables('apiVersion')]",
+        "dependsOn": [
+          "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]"
+        ],
+        "properties": {
+          "publisher": "Microsoft.VisualStudio.Services",
+          "type": "TeamServicesAgentLinux",
+          "typeHandlerVersion": "1.0",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "VSTSAccountUrl": "[parameters('devopsUrl')]",
+            "TeamProject": "[parameters('devopsProject')]",
+            "DeploymentGroup": "[parameters('devopsDeploymentGroup')]",
+            "AgentName": "[variables('vmName')]",
+            "Tags": ""
+          },
+          "protectedSettings": {
+            "PATToken": "[parameters('devopsPat')]"
+          }
+        }
+      }]
     },
     {
       "apiVersion": "2017-03-30",
