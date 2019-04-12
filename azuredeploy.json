@@ -332,7 +332,7 @@
     },
     {
       "condition": "[and(not(empty(parameters('devopsUrl'))), not(empty(parameters('devopsProject'))), not(empty(parameters('devopsDeploymentGroup'))), not(empty(parameters('devopsPat'))))]",
-      "name": "[concat(variables('vmName'), '-boss-vsts-agent')]",
+      "name": "[concat(variables('vmName'), '-boss', '/vsts-agent')]",
       "apiVersion": "2015-01-01",
       "type": "Microsoft.Resources/deployments",
       "properties": {
@@ -365,7 +365,8 @@
         }
       },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]",
+        "[concat('Microsoft.Compute/virtualMachines/extensions', variables('vmName'), '-boss', '/installjmeter')]"
       ]
     },
     {
