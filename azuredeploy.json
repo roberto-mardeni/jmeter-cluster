@@ -95,18 +95,21 @@
     },
     "devopsUrl": {
       "type": "string",
+      "defaultValue": "",
       "metadata": {
         "description": "(Optional) The URL of the Azure DevOps Organization to add the master as an agent."
       }
     },
     "devopsPat": {
-      "type": "string",
+      "type": "securestring",
+      "defaultValue": "",
       "metadata": {
         "description": "(Optional) The PAT of the Azure DevOps Organization to add the master as an agent."
       }
     },
     "devopsProject": {
       "type": "string",
+      "defaultValue": "",
       "metadata": {
         "description": "(Optional) The Project of the Azure DevOps Organization to add the master as an agent."
       }
