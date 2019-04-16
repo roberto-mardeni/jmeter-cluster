@@ -314,10 +314,10 @@
       "resources": [{
         "type": "Microsoft.Compute/virtualMachines/extensions",
         "name": "[concat(variables('vmName'), '-boss', '/installjmeter')]",
-        "apiVersion": "[variables('apiVersion')]",
+        "apiVersion": "2017-03-30",
         "location": "[parameters('location')]",
         "dependsOn": [
-          "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]"
+          "[resourceId('Microsoft.Compute/virtualMachines', concat(variables('vmName'), '-boss'))]"
         ],
         "properties": {
           "publisher": "[variables('settings').extensionSettings.boss.publisher]",
@@ -333,9 +333,10 @@
         "name": "[concat(variables('vmName'), '-boss', '/vstsagent')]",
         "type": "Microsoft.Compute/virtualMachines/extensions",
         "location": "[parameters('location')]",
-        "apiVersion": "[variables('apiVersion')]",
+        "apiVersion": "2017-03-30",
         "dependsOn": [
-          "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-boss')]"
+          "[resourceId('Microsoft.Compute/virtualMachines', concat(variables('vmName'), '-boss'))]",
+          "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('vmName'), '-boss'), 'installjmeter')]"
         ],
         "properties": {
           "publisher": "Microsoft.VisualStudio.Services",
