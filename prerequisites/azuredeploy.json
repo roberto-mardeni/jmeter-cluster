@@ -1,0 +1,60 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      "name": {
+          "type": "string",
+          "metadata": {
+            "description": "Name of the VNET"
+          }
+      },
+      "addressPrefix": {
+          "type": "string",
+          "metadata": {
+            "description": "Address Prefix CIDR"
+          }
+      },
+      "subnetName": {
+          "type": "string",
+          "metadata": {
+            "description": "Subnet name"
+          }
+      },
+      "subnetAddressPrefix": {
+          "type": "string",
+          "metadata": {
+            "description": "Subnet Address Prefix CIDR"
+          }
+      },
+      "enableDdosProtection": {
+          "type": "bool",
+          "metadata": {
+            "description": "Indicates if DDOS Protection is enabled"
+          }
+      }
+  },
+  "resources": [
+      {
+          "apiVersion": "2018-08-01",
+          "name": "[parameters('name')]",
+          "type": "Microsoft.Network/virtualNetworks",
+          "location": "[resourceGroup().location]",
+          "properties": {
+              "addressSpace": {
+                  "addressPrefixes": [
+                      "[parameters('addressPrefix')]"
+                  ]
+              },
+              "subnets": [
+                  {
+                      "name": "[parameters('subnetName')]",
+                      "properties": {
+                          "addressPrefix": "[parameters('subnetAddressPrefix')]"
+                      }
+                  }
+              ],
+              "enableDdosProtection": "[parameters('enableDdosProtection')]"
+          }
+      }
+  ]
+}
