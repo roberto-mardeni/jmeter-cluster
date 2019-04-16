@@ -14,7 +14,7 @@
         "description": "Admin password used when provisioning virtual machines"
       }
     },
-    "existingVirtualNetworkName": {
+    "virtualNetworkName": {
       "type": "string",
       "defaultValue": "jmeter-vnet",
       "metadata": {
@@ -129,17 +129,20 @@
     "bossNodeIp": "10.0.4.10",
     "subNodesIpPrefix": "10.0.4.2",
     "networkSettings": {
-      "virtualNetworkName": "[parameters('existingVirtualNetworkName')]",
       "addressPrefix": "10.0.0.0/16",
+      "enableDdosProtection": false,
       "subnet": {
+        "default": {
+          "name": "default",
+          "prefix": "10.0.0.0/24"
+        },
         "jmeter": {
           "name": "jmeter",
-          "prefix": "10.0.4.0/24",
-          "vnet": "[parameters('existingVirtualNetworkName')]"
+          "prefix": "10.0.1.0/24"
         }
       }
     },
-    "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkName')), '/subnets/jmeter')]",
+    "subnetRef": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/jmeter')]",
     "nicName": "jmeter-nic",
     "vmName": "jmeter-vm",
     "setupScripts": [
@@ -218,12 +221,28 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
-      "type": "Microsoft.Network/virtualNetworks/subnets",
-      "name": "[concat(variables('networkSettings').virtualNetworkName, '/jmeter')]",
+      "apiVersion": "2018-08-01",
+      "name": "[parameters('virtualNetworkName')]",
+      "type": "Microsoft.Network/virtualNetworks",
       "location": "[parameters('location')]",
       "properties": {
-        "addressPrefix": "[variables('networkSettings').subnet.jmeter.prefix]"
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('networkSettings').addressPrefix]"
+          ]
+        },
+        "subnets": [{
+          "name": "[variables('networkSettings').subnet.default.name]",
+          "properties": {
+            "addressPrefix": "[variables('networkSettings').subnet.default.prefix]"
+          }
+        }, {
+          "name": "[variables('networkSettings').subnet.jmeter.name]",
+          "properties": {
+            "addressPrefix": "[variables('networkSettings').subnet.jmeter.prefix]"
+          }
+        }],
+        "enableDdosProtection": "[variables('networkSettings').enableDdosProtection]"
       }
     },
     {
