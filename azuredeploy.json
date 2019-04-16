@@ -255,7 +255,7 @@
         "count": "[parameters('subNodeCount')]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'), '/subnets/jmeter')]"
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]"
       ],
       "properties": {
         "ipConfigurations": [{
