@@ -255,8 +255,7 @@
         "count": "[parameters('subNodeCount')]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), variables('networkSettings').subnet.jmeter.name)]"
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]"
       ],
       "properties": {
         "ipConfigurations": [{
@@ -277,9 +276,9 @@
       "name": "[concat(variables('nicName'), '-boss')]",
       "location": "[parameters('location')]",
       "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
         "[concat('Microsoft.Network/publicIPAddresses/', 'jmeter-pip')]",
-        "[concat('Microsoft.Network/networkSecurityGroups/', 'jmeter-nsg')]",
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), variables('networkSettings').subnet.jmeter.name)]"
+        "[concat('Microsoft.Network/networkSecurityGroups/', 'jmeter-nsg')]"
       ],
       "properties": {
         "ipConfigurations": [{
