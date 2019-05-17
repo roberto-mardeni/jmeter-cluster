@@ -97,7 +97,8 @@ expand_ip_range() {
 
 install_java()
 {
-    log "Installing Java"
+    # http://ubuntuhandbook.org/index.php/2018/11/how-to-install-oracle-java-11-in-ubuntu-18-04-18-10/
+    log "Installing Java 11"
     add-apt-repository -y ppa:linuxuprising/java
     apt-get -y update
     echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
