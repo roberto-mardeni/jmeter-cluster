@@ -101,8 +101,9 @@ install_java()
     log "Installing Java 11"
     add-apt-repository -y ppa:linuxuprising/java
     apt-get -y update
-    echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
-    echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
+    # https://stackoverflow.com/questions/19275856/auto-yes-to-the-license-agreement-on-sudo-apt-get-y-install-oracle-java7-instal
+    echo debconf shared/accepted-oracle-license-v1-2 select true | sudo debconf-set-selections
+    echo debconf shared/accepted-oracle-license-v1-2 seen true | sudo debconf-set-selections
     apt-get -y install oracle-java11-installer
     apt-get -y install oracle-java11-set-default
 }
