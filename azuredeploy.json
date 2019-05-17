@@ -367,7 +367,7 @@
             "VSTSAccountUrl": "[parameters('devopsUrl')]",
             "TeamProject": "[parameters('devopsProject')]",
             "DeploymentGroup": "[parameters('devopsDeploymentGroup')]",
-            "AgentName": "[variables('vmName')]",
+            "AgentName": "[concat(variables('vmName'), '-boss')]",
             "Tags": ""
           },
           "protectedSettings": {
