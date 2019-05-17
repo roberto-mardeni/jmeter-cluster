@@ -368,7 +368,7 @@
             "TeamProject": "[parameters('devopsProject')]",
             "DeploymentGroup": "[parameters('devopsDeploymentGroup')]",
             "AgentName": "[concat(variables('vmName'), '-boss')]",
-            "Tags": ""
+            "Tags": "boss"
           },
           "protectedSettings": {
             "PATToken": "[parameters('devopsPat')]"
