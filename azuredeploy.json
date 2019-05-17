@@ -109,7 +109,7 @@
     },
     "devopsProject": {
       "type": "string",
-      "defaultValue": "",
+      "defaultValue": "jmeter",
       "metadata": {
         "description": "(Optional) The Project of the Azure DevOps Organization to add the master as an agent."
       }
